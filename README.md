@@ -92,4 +92,133 @@ View the synthesis statistics
 ![Screenshot from 2023-09-10 10-07-14](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/2222c930-4ffb-4ca4-ab6f-2000c3dea088)
 
 
+## Day 2 Good Floorplan Vs Bad Floorplan and Introduction to Library Cells
+### Floorplanning considerations
+### Utilization Factor & Aspect Ratio
+Two parameters are of importance when it comes to floorplanning namely, Utilisation Factor and Aspect Ratio. They are defined as follows:
+```
+Utilisation Factor =  Area occupied by netlist
+                     __________________________
+                        Total area of core
+```
+```
+Aspect Ratio =  Height
+               ________
+                Width
+```
+A Utilisation Factor of 1 signifies 100% utilisation leaving no space for extra cells such as buffer. However, practically, the Utilisation Factor is 0.5-0.6. Likewise, an Aspect ratio of 1 implies that the chip is square shaped. Any value other than 1 implies rectanglular chip.
+
+#### Pre-placed cells
+
+Once the Utilisation Factor and Aspect Ratio has been decided, the locations of pre-placed cells need to be defined. Pre-placed cells are IPs comprising large combinational logic which once placed maintain a fixed position. Since they are placed before placement and routing, the are known as pre-placed cells.
+
+#### Decoupling capacitors
+
+Pre-placed cells must then be surrounded with decoupling capacitors (decaps). The resistances and capacitances associated with long wire lengths can cause the power supply voltage to drop significantly before reaching the logic circuits. This can lead to the signal value entering into the undefined region, outside the noise margin range. Decaps are huge capacitors charged to power supply voltage and placed close the logic circuit. Their role is to decouple the circuit from power supply by supplying the necessary amount of current to the circuit. They pervent crosstalk and enable local communication.
+
+#### Power Planning
+
+Each block on the chip, however, cannot have its own decap unlike the pre-placed macros. Therefore, a good power planning ensures that each block has its own VDD and VSS pads connected to the horizontal and vertical power and GND lines which form a power mesh.
+
+#### Pin Placement
+
+The netlist defines connectivity between logic gates. The place between the core and die is utilised for placing pins. The connectivity information coded in either VHDL or Verilog is used to determine the position of I/O pads of various pins. Then, logical placement blocking of pre-placed macros is performed so as to differentiate that area from that of the pin area.
+#### Floorplan run on OpenLANE & view in Magic
+
+* Importance files in increasing priority order:
+
+1. ```floorplan.tcl``` - System default envrionment variables
+2. ```conifg.tcl```
+3. ```sky130A_sky130_fd_sc_hd_config.tcl```
+
+* Floorplan envrionment variables or switches:
+
+1. ```FP_CORE_UTIL``` - floorplan core utilisation
+2. ```FP_ASPECT_RATIO``` - floorplan aspect ratio
+3. ```FP_CORE_MARGIN``` - Core to die margin area
+4. ```FP_IO_MODE``` - defines pin configurations (1 = equidistant/0 = not equidistant)
+5. ```FP_CORE_VMETAL``` - vertical metal layer
+6. ```FP_CORE_HMETAL``` - horizontal metal layer
+
+***Note: Usually, vertical metal layer and horizontal metal layer values will be 1 more than that specified in the files***
+ 
+ To run the picorv32a floorplan in openLANE:
+ ```
+ run_floorplan
+ 
+ ```
+![Screenshot from 2023-09-11 11-19-41](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/d852e711-a445-40ab-8603-fbc266b8e3f0)
+
+Post the floorplan run, a .def file will have been created within the ```results/floorplan``` directory. 
+We may review floorplan files by checking the ```floorplan.tcl```. 
+The system defaults will have been overriden by switches set in ```conifg.tcl``` and further overriden by switches set in ```sky130A_sky130_fd_sc_hd_config.tcl```.
+ 
+To view the floorplan, Magic is invoked after moving to the ```results/floorplan``` directory:
+
+```
+magic -T /Home/OpenLane/pdks/sky130A/libs.tech/magic/sky130A.tech lef read ../../tmp/merged.min.lef def read picorv32.def &
+```
+![Screenshot from 2023-09-11 11-23-46](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/1eb7a3a3-bbf6-4308-b649-1c2ac1d356f4)
+
+One can zoom into Magic layout by selecting an area with left and right mouse click followed by pressing "z" key.
+
+Various components can be identified by using the what command in tkcon window after making a selection on the component.
+
+Zooming in also provides a view of decaps present in picorv32a chip.
+
+The standard cell can be found at the bottom left corner.
+
+You can clearly see I/O pins, Decap cells and Tap cells. Tap cells are placed in a zig zag manner or you can say diagonally
+
+### Placement
+To perform placement
+```
+run_placement
+```
+![Screenshot from 2023-09-11 10-56-51](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/e6837458-50f9-4d49-a720-abbbfa8aa1a5)
+### Standard Cell Design Flow
+
+Standard cell design flow involves the following:
+
+1. Inputs: PDKs, DRC & LVS rules, SPICE models, libraries, user-defined specifications. 
+2. Design steps: Circuit design, Layout design (Art of layout Euler's path and stick diagram), Extraction of parasitics, Characterization (timing, noise, power).
+3. Outputs: CDL (circuit description language), LEF, GDSII, extracted SPICE netlist (.cir), timing, noise and power .lib files
+
+### Standard Cell Characterization Flow
+
+A typical standard cell characterization flow includes the following steps:
+
+1. Read in the models and tech files
+2. Read extracted spice netlist
+3. Recognise behaviour of the cell
+4. Read the subcircuits
+5. Attach power sources
+6. Apply stimulus to characterization setup
+7. Provide necessary output capacitance loads
+8. Provide necessary simulation commands
+
+The opensource software called GUNA can be used for characterization. Steps 1-8 are fed into the GUNA software which generates timing, noise and power models.
+
+### Timing Parameter Definitions
+
+Timing defintion | Value
+------------ | -------------
+slew_low_rise_thr  | 20% value
+slew_high_rise_thr |  80% value
+slew_low_fall_thr | 20% value
+slew_high_fall_thr | 80% value
+in_rise_thr | 50% value
+in_fall_thr | 50% value
+out_rise_thr | 50% value
+out_fall_thr | 50% value
+
+```
+rise delay =  time(out_fall_thr) - time(in_rise_thr)
+
+Fall transition time: time(slew_high_fall_thr) - time(slew_low_fall_thr)
+
+Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
+```
+
+A poor choice of threshold points leads to neative delay value. Therefore a correct choice of thresholds is very important.
 
