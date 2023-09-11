@@ -92,6 +92,8 @@ View the synthesis statistics
 ![Screenshot from 2023-09-10 10-07-14](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/2222c930-4ffb-4ca4-ab6f-2000c3dea088)
 
 
+
+
 ## Day 2 Good Floorplan Vs Bad Floorplan and Introduction to Library Cells
 ### Floorplanning considerations
 ### Utilization Factor & Aspect Ratio
