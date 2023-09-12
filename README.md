@@ -224,3 +224,105 @@ Rise transition time: time(slew_high_rise_thr) - time(slew_low_rise_thr)
 
 A poor choice of threshold points leads to neative delay value. Therefore a correct choice of thresholds is very important.
 
+## Day 3 Design Library Cell using ngspice simulations and Magic layout
+### SPICE Deck creation & Simulation
+A SPICE deck includes information about the following:
+
+1 Model description
+2 Netlist description
+3 Component connectivity
+4 Component values
+5 Capacitance load
+6 Nodes
+7 Simulation type and parameters
+8 Libraries included
+### CMOS inverter Switching Threshold Vm
+The sitching threshold of a CMOS inverter is the point on the transfer characteristic where Vin equals Vout (=Vm). At this point both PMOS and NMOS are in ON state which gives rise to a leakage current
+
+### 16 Mask CMOS Fabrication
+The 16-mask CMOS process consists of the following steps:
+
+1. Selection of subtrate: Secting the body/substrate material.
+2. Creating active region for transistors: Isolation between active region pockets by SiO2 and Si3N4 deposition followed by photolithography and etching.
+3. N-well and P-well formation: Ion implanation by Boron for P-well and by Phosphorous for N-well formation.
+4. Formation of gate terminal: NMOS and PMOS gates formed by photolithography techniques.
+5. LDD (lightly doped drain) formation: LDD formed to prevent hot electron effect.
+6. Source & drain formation: Screen oxide added to avoid channelling during implants followed by Aresenic implantation and annealing.
+7. Local interconnect formation: Removal of screen oxide by HF etching. Deposition of Ti for low resistant contacts.
+8. Higher level metal formation: CMP for planarization followed by TiN and Tungsten deposition. Top SiN layer for chip protection.
+
+## SPICE Deck Creation and Simulation for CMOS inverter
+
+- Before performing a SPICE simulation we need to create SPICE Deck
+SPICE Deck provides information about the following:
+- Component connectivity - Connectivity of the Vdd, Vss,Vin, substrate. Substrate tunes the threshold voltage of the MOS.
+- component values - values of PMOS and NMOS, Output load, Input Gate Voltage, supply voltage.
+- Node Identification and naming - Nodes are required to define the SPICE Netlist
+     For example ```M1 out in vdd vdd pmos w = 0.375u L = 0.25u``` , ```cload out 0 10f```
+- Simulation commands
+- Model file - information of parameters related to transistors
+Simulation of CMOS using different width and lengths. From the waveform, irrespective of switching the shape of it are almost same.
+
+![Screenshot from 2023-09-12 22-18-49](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/4b9a5f2d-c07b-494d-842f-24706fa9c56f)
+
+## Lab steps to git clone vsdstdcelldesign
+
+- First, clone the required mag files and spicemodels of inverter,pmos and nmos sky130. The command to clone files from github link is:
+```
+git clone https://github.com/nickson-jose/vsdstdcelldesign.git
+```
+once I run this command, it will create ``vsdstdcelldesign`` folder in openlane directory.
+
+Inorder to open the mag file and run magic go to the directory
+
+For layout we run magic command
+
+``` magic -T sky130A.tech sky130_inv.mag & ```
+
+Ampersand at the end makes the next prompt line free, otherwise magic keeps the prompt line busy. Once we run the magic command we get the layout of the inverter in the magic window
+![Screenshot from 2023-09-12 21-10-41](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/6c7aef09-21a1-413b-b1d6-87ec4ad9f02e)
+
+## SKY130 basic layer layout and LEF using inverter
+
+- From Layout, we see the layers which are required for CMOS inverter. Inverter is, PMOS and NMOS connected together.
+- Gates of both PMOS and NMOS are connected together and fed to input(here ,A), NMOS source connected to ground(here, VGND), PMOS source is connected to VDD(here, VPWR), Drains of PMOS and NMOS are connected together and fed to output(here, Y). 
+The First layer in skywater130 is ``localinterconnect layer(locali)`` , above that metal 1 is purple color and metal 2 is pink color.
+If you want to see connections between two different parts, place the cursor over that area and press S one times. The tkson window gives the component name.
+![Screenshot from 2023-09-12 21-13-41](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/a6f9bf65-2a2b-4246-833d-d42c2e57c82f)
+### Designing standard cell and SPICE extraction in MAGIC 
+
+-  First we need to provide bounding box width and height in tkson window. lets say that width of BBOX is 1.38u and height is 2.72u. The command to give these values to magic is
+   ``` property Fixed BBOX (0 0 1.32 2.72)  ```
+- After this, Vdd, GND segments which are in metal 1 layer, their respective contacts and atlast logic gates layout is defined
+Inorder to know the logical functioning of the inverter, we extract the spice and then we do simulation on the spice. To extract it on spice we open TKCON window, the steps are
+- Know the present directory - ``pwd ``
+- create an extration file -  the command is  `` extract all `` and  ``sky130_inv.ext`` files has been created
+          
+- create spice file using .ext file to be used with our ngspice tool  - the commands are  
+      ``` ext2spice cthresh 0 rthresh 0 ``` - extracts parasatic capcitances also since these are actual layers - nothing is created in the folder
+      ``` ext2spice ``` - a file ```sky130_inv.spice``` has been created.
+  ![Screenshot from 2023-09-12 21-21-01](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/cdd4f8b0-c339-4dd5-8ca6-46b92dc969d5)
+  
+
+  #### the final sky130_inv.spice file is modified to:
+  
+  ![Screenshot from 2023-09-12 22-34-42](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/c1c919fe-3da2-4ad8-95a1-8afcd447dd01)
+
+  For simulation, ngspice is invoked in the terminal:
+
+```
+ngspice sky130_inv.spice
+```
+
+The output "y" is to be plotted with "time" and swept over the input "a":
+
+```
+plot y vs time a
+```
+![Screenshot from 2023-09-12 22-40-38](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/00351bdb-80e6-49e2-958f-7a0e95d38ae0)
+
+
+
+
+
+   
