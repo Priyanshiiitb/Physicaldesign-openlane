@@ -321,8 +321,71 @@ plot y vs time a
 ```
 ![Screenshot from 2023-09-12 22-40-38](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/00351bdb-80e6-49e2-958f-7a0e95d38ae0)
 
+## LAB exercise and DRC Challenges
 
+## Intrdocution of Magic and Skywater DRC's
 
+  - In-depth overview of Magic's DRC engine
+  - Introduction to Google/Skywater DRC rules
+  - Lab : Warm-up exercise : Fixing a simple rule error
+  - Lab : Main exercie : Fixing or create a complex error
+
+ # Sky130s pdk intro and Steps to download labs
+  
+  - setup to view the layouts
+  - For extracting and generating views, Google/skywater repo files were built with Magic
+  - Technology file dependency is more for any layout. hence, this file is created first.
+  - Since, Pdk is still under development, there are some unfinished tech files and these are packaged for magic along with lab exercise layout and bunch of stuff into the tar ball
+ 
+We can download the packaged files from web using ``wget `` command. wget stands for web get, a non-interactive file downloader command.
+  
+  ``` wget http://opencircuitdesign.com/open_pdks/archive/drc_tests.tgz```
+  
+The archive file drc_tests.tgz is downloaded into our user directory 
+  
+Now run MAGIC
+
+For better graphics use command ``magic -d XR ``
+
+Now, lets see an example of simple failing set of rules of metal 1 layer.  you can either run this by magic command line `` magic -d XR met1.mag `` or from the magic console window, `` menu - file - open -load file9here, met1.mag) ``
+
+![Screenshot from 2023-09-16 10-13-24](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/4502c266-62e5-408e-9dae-0cbb74709af6)
+
+## Load Sky130 tech rules for drc challenges 
+
+First load the poly file by ``load poly.mag`` on tkcon window.
+
+Finding the error by mouse cursor and find the box area, Poly.9 is violated due to spacing between polyres and poly.
+
+![Screenshot from 2023-09-16 10-36-13](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/6b5dfe99-d4a5-41ef-9321-47fd47ed94a7)
 
 
    
+In line
+
+```
+spacing npres *nsd 480 touching_illegal \
+	"poly.resistor spacing to N-tap < %d (poly.9)"
+```
+change to
+
+```
+spacing npres allpolynonres 480 touching_illegal \
+	"poly.resistor spacing to N-tap < %d (poly.9)"
+```
+Also,
+```
+spacing xhrpoly,uhrpoly,xpc alldiff 480 touching_illegal \
+
+	"xhrpoly/uhrpoly resistor spacing to diffusion < %d (poly.9)"
+```
+
+change to 
+
+```
+spacing xhrpoly,uhrpoly,xpc allpolynonres 480 touching_illegal \
+
+	"xhrpoly/uhrpoly resistor spacing to diffusion < %d (poly.9)"
+
+```
+![Screenshot from 2023-09-16 10-36-33](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/1fb876f5-f987-4dc2-abaa-170cd0589359)
