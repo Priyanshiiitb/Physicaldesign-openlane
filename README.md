@@ -491,6 +491,92 @@ add_lefs -src $lefs
 run_synthesis
 
 ```
+STA report 
 
+![image](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/7e430f5f-e84b-4c02-b414-57c8442abf65)
+
+## Delay Tables
+
+Basically, Delay is a parameter that has huge impact on our cells in the design. Delay decides each and every other factor in timing. 
+For a cell with different size, threshold voltages, delay model table is created where we can it as timing table.
+```Delay of a cell depends on input transition and out load```. 
+Lets say two scenarios, 
+we have long wire and the cell(X1) is sitting at the end of the wire : the delay of this cell will be different because of the bad transition that caused due to the resistance and capcitances on the long wire.
+we have the same cell sitting at the end of the short wire: the delay of this will be different since the tarn is not that bad comapred to the earlier scenario.
+Eventhough both are same cells, depending upon the input tran, the delay got chaned. Same goes with o/p load also.
+
+VLSI engineers have identified specific constraints when inserting buffers to preserve signal integrity. They've noticed that each buffer level must maintain consistent sizing, but their delays can vary depending on the load they drive. To address this, they introduced the concept of "delay tables," which essentially consist of 2D arrays containing values for input slew and load capacitance, each associated with different buffer sizes. These tables serve as timing models for the design.
+
+When the algorithm works with these delay tables, it utilizes the provided input slew and load capacitance values to compute the corresponding delay values for the buffers. In cases where the precise delay data is not readily available, the algorithm employs a technique of interpolation to determine the closest available data points and extrapolates from them to estimate the required delay values.
+
+![Screenshot from 2023-09-17 16-04-27](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/f2629ab9-a437-4f53-afcc-d19b0910a3ee)
+
+## Openlane steps with custom standard cell
+
+
+We perform synthesis and found that it has positive slack and met timing constraints.
+
+During Floorplan,``` 504 endcaps, 6731 tapcells ``` got placed. Design has 275 original rows
+
+Now ``` run_placement```
+
+After placement, we check for legality &To check the layout invoke magic from the results/placement directory:
+
+```
+magic -T /home/OpenLane/vsdstdcelldesign/libs/sky130A.tech lef read tmp/merged.nom.lef def read results/floorplan/picorv32a.def &
+
+```
+![Screenshot from 2023-09-17 18-20-32](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/30a56f46-4423-4df8-b496-7b211429099e)
+
+
+### Clock Tree Synthesis using Tritoncts
+Clock tree synthesis (CTS) can be implemented in various ways, and the choice of the specific technique depends on the design requirements, constraints, and goals. Here are some different types or approaches to clock tree synthesis:
+
+Balanced Tree CTS: In a balanced tree CTS, the clock signal is distributed in a balanced manner, often resembling a binary tree structure. This approach aims to provide roughly equal path lengths to all clock sinks (flip-flops) to minimize clock skew. It's relatively straightforward to implement and analyze but may not be the most power-efficient solution.
+
+H-tree CTS: An H-tree CTS uses a hierarchical tree structure, resembling the letter "H." It is particularly effective for distributing clock signals across large chip areas. The hierarchical structure can help reduce clock skew and optimize power consumption.
+
+Star CTS: In a star CTS, the clock signal is distributed from a single central point (like a star) to all the flip-flops. This approach simplifies clock distribution and minimizes clock skew but may require a higher number of buffers near the source.
+
+Global-Local CTS: Global-Local CTS is a hybrid approach that combines elements of both star and tree topologies. The global clock tree distributes the clock signal to major clock domains, while local trees within each domain further distribute the clock. This approach balances between global and local optimization, addressing both chip-wide and domain-specific clocking requirements.
+
+Mesh CTS: In a mesh CTS, clock wires are arranged in a mesh-like grid pattern, and each flip-flop is connected to the nearest available clock wire. It is often used in highly regular and structured designs, such as memory arrays. Mesh CTS can offer a balance between simplicity and skew minimization.
+
+Adaptive CTS: Adaptive CTS techniques adjust the clock tree structure dynamically based on the timing and congestion constraints of the design. This approach allows for greater flexibility and adaptability in meeting design goals but may be more complex to implement.
+
+
+### crosstalk in VLSI:
+Impact: Crosstalk is a significant concern in VLSI design due to the high integration density of components on a chip. Uncontrolled crosstalk can lead to data corruption, timing violations, and increased power consumption. Mitigation: VLSI designers employ various techniques to mitigate crosstalk, such as optimizing layout and routing, using appropriate shielding, implementing proper clock distribution strategies, and utilizing clock gating to reduce dynamic power consumption when logic is idle
+
+### Clock Net Shielding in VLSI:
+Purpose: In VLSI circuits, the clock distribution network is crucial for synchronous operation. Clock signals must reach all parts of the chip while minimizing skew and maintaining signal integrity. Shielding Techniques: VLSI designers may use shielding techniques to isolate the clock network from other signals, reducing the risk of interference. This can include dedicated clock routing layers, clock tree synthesis algorithms, and buffer insertion to manage clock distribution more effectively. Clock Domain Isolation: VLSI designs often have multiple clock domains. Shielding and proper clock gating help ensure that clock signals do not propagate between domains, avoiding metastability issues and maintaining synchronization.
+
+
+## day 5 Final steps in RTL2GDS
+### Maze Routing and Lee's algorithm
+
+ Routing is the process of establishing a physical connection between two pins. Algorithms designed for routing take source and target pins and aim to find the most efficient path between them, ensuring a valid connection exists.
+
+The Maze Routing algorithm, such as the Lee algorithm, is one approach for solving routing problems. In this method, a grid similar to the one created during cell customization is utilized for routing purposes. The Lee algorithm starts with two designated points, the source and target, and leverages the routing grid to identify the shortest or optimal route between them.
+
+The algorithm assigns labels to neighboring grid cells around the source, incrementing them from 1 until it reaches the target (for instance, from 1 to 7). Various paths may emerge during this process, including L-shaped and zigzag-shaped routes. The Lee algorithm prioritizes selecting the best path, typically favoring L-shaped routes over zigzags. If no L-shaped paths are available, it may resort to zigzag routes. This approach is particularly valuable for global routing tasks.
+
+However, the Lee algorithm has limitations. It essentially constructs a maze and then numbers its cells from the source to the target. While effective for routing between two pins, it can be time-consuming when dealing with millions of pins. There are alternative algorithms that address similar routing challenges.
+
+![Screenshot from 2023-09-17 18-25-05](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/1d3e79a5-897d-4608-98e1-1db8bca60b0e)
+
+# Design Rule Check (DRC)
+
+DRC verifies whether a design meets the predefined process technology rules given by the foundry for its manufacturing. DRC checking is an essential part of the physical design flow and ensures the design meets manufacturing requirements and will not result in a chip failure. It defines the Quality of chip. They are so many DRCs, let us see few of them
+
+Design rules for physical wires
+
+Minimum width of the wire
+Minimum spacing between the wires
+Minimum pitch of the wire To solve signal short violation, we take the metal layer and put it on to upper metal layer. we check via rules
+Via width
+via spacing
+
+![Screenshot from 2023-09-17 18-29-11](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/9d1b7d1d-1c76-45dd-9f6f-d0ab9b843108)
 
 
