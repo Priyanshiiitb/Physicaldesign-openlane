@@ -538,7 +538,8 @@ Now ``` run_placement```
 After placement, we check for legality &To check the layout invoke magic from the results/placement directory:
 
 ```
-magic -T /home/OpenLane/vsdstdcelldesign/libs/sky130A.tech lef read tmp/merged.nom.lef def read results/floorplan/picorv32a.def &
+magic -T /home/priyansh/OpenLane/vsdstdcelldesign/libs/sky130A.tech lef read ../../tmp/merged.nom.lef def read picorv32.def &
+
 
 ```
 ![Screenshot from 2023-09-17 18-20-32](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/30a56f46-4423-4df8-b496-7b211429099e)
