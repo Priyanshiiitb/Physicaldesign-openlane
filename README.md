@@ -567,6 +567,16 @@ Impact: Crosstalk is a significant concern in VLSI design due to the high integr
 ### Clock Net Shielding in VLSI:
 Purpose: In VLSI circuits, the clock distribution network is crucial for synchronous operation. Clock signals must reach all parts of the chip while minimizing skew and maintaining signal integrity. Shielding Techniques: VLSI designers may use shielding techniques to isolate the clock network from other signals, reducing the risk of interference. This can include dedicated clock routing layers, clock tree synthesis algorithms, and buffer insertion to manage clock distribution more effectively. Clock Domain Isolation: VLSI designs often have multiple clock domains. Shielding and proper clock gating help ensure that clock signals do not propagate between domains, avoiding metastability issues and maintaining synchronization.
 
+### CTS LAB
+The below command is used to run CTS in OpenLANE
+```
+run_cts 
+```
+
+![Screenshot from 2023-09-18 22-31-04](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/a7a29c6c-7c00-4263-8e47-d7bcbfffe00d)
+
+After CTS run, my slack values are setup:12.76, Hold:0.19
+Here also both values are not violating.
 
 ## Day 5 Final steps in RTL2GDS
 ### Maze Routing and Lee's algorithm
@@ -595,4 +605,89 @@ via spacing
 
 ![Screenshot from 2023-09-17 18-29-11](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/9d1b7d1d-1c76-45dd-9f6f-d0ab9b843108)
 
+### Power Distribution Network and Routing 
 
+- Unlike the general ASIC flow, Power Distribution Network generation is not a part of floorplan run in OpenLANE. PDN must be generated after CTS and post-CTS STA analyses:
+- We can check whether PDN has been created or no by check the current def environment variable:  ``` echo $::env(CURRENT_DEF) ```
+
+```bash
+gen_pdn
+```
+- gen_pdn Generates the power distribution network.
+
+- The power distribution network has to take the design_cts.def as the input def file.
+
+- Power rings,strapes and rails are created by PDN.
+
+- From VDD and VSS pads, power is drawn to power rings.
+
+- Next, the horizontal and vertical strapes connected to rings draw the power from strapes.
+
+- Stapes are connected to rings and these rings are connected to std cells. So, standard cells get power from rails.
+
+- Here are definitions for the straps and the rails. In this design, straps are at metal layer 4 and 5 and the standard cell rails are at the metal layer 1. Vias connect accross the layers as required.
+
+
+![Screenshot from 2023-09-18 22-13-42](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/878fd194-85ac-46e6-9c03-d1ede0794154)
+  
+### Routing 
+
+In the realm of routing within Electronic Design Automation (EDA) tools, such as both OpenLANE and commercial EDA tools, the routing process is exceptionally intricate due to the vast design space. To simplify this complexity, the routing procedure is typically divided into two distinct stages: Global Routing and Detailed Routing.
+
+- The two routing engines responsible for handling these two stages are as follows:
+  - *Global Routing:*
+
+    In this stage, the routing region is subdivided into rectangular grid cells and represented as a coarse 3D routing graph. This task is accomplished by the "FASTE ROUTE" engine.
+  - *Detailed Routing:*
+
+     Here, finer grid granularity and routing guides are employed to implement the physical wiring. The "tritonRoute" engine comes into play at this stage. "Fast Route" generates initial routing guides, while "Triton Route" utilizes the Global Route information and further refines the routing, employing various strategies and optimizations to determine the most optimal path for connecting the pins.
+
+
+***Key Features of TritonRoute***
+- *Initial Detail Routing*:
+
+  TritonRoute initiates the detailed routing process, providing the foundation for the subsequent routing steps.
+
+- *Adherence to Pre-Processed Route Guides*:
+
+  TritonRoute places significant emphasis on following pre-processed route guides. This involves several actions:
+
+- *Initial Route Guide Analysis*:
+
+  TritonRoute analyzes the directions specified in the preferred route guides. If any non-directional routing guides are identified, it breaks them down into unit widths.
+
+- *Guide Splitting:*
+
+  In cases where non-directional routing guides are encountered, TritonRoute divides them into unit widths to facilitate routing.
+
+- *Guide Merging:*
+
+  TritonRoute merges guides that are orthogonal (touching guides) to the preferred guides, streamlining the routing process.
+
+- *Guide Bridging:*
+
+  When it encounters guides that run parallel to the preferred routing guides, TritonRoute employs an additional layer to bridge them, ensuring efficient routing within the preprocessed guides.
+
+Assumes route guide for each net satisfy inter guide connectivity Same metal layer with touching guides or neighbouring metal layers with nonzero vertically overlapped area( via are placed ).each unconnected termial i.e., pin of a standard cell instance should have its pin shape overlapped by a routing guide( a black dot(pin) with purple box(metal1 layer))
+
+### TritonRoute problem statement
+```bash
+Inputs : LEF, DEF, Preprocessed route guides
+Output : Detailed routing solution with optimized wire length and via count
+Constraints : Route guide honoring, connectivity constraints and design rules.
+```
+
+The space where the detailed route takes place has been defined. Now TritonRoute handles the connectivity in two ways.
+
+- *Access Point(AP)* : An on-grid point on the metal of the route guide, and is used to connect to lower-layer segments, pins or IO ports,upper-layer segments. Access Point Cluster(APC) : A union of all the Aps derived from same lower-layer segment, a pin or an IO port, upper-layer guide.
+
+***TritonRoute run for routing***
+
+Make sure the CURRENT_DEF is set to pdn.def
+
+- Start routing by using
+
+```bash
+run_routing
+```
+![Screenshot from 2023-09-18 22-13-25](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/282e12d1-5c3a-44d4-b208-91a59babc2b1)
