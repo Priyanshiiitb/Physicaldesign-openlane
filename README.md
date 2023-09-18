@@ -691,3 +691,45 @@ Make sure the CURRENT_DEF is set to pdn.def
 run_routing
 ```
 ![Screenshot from 2023-09-18 22-13-25](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/282e12d1-5c3a-44d4-b208-91a59babc2b1)
+
+Layout in magic tool post routing:
+
+![Screenshot from 2023-09-18 22-34-59](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/c5c86eb1-6b90-4ebe-9bb1-6ea19d899b58)
+
+## Openlane Interactive flow:
+
+```
+cd /home/priyansh/OpenLane/
+
+./flow.tcl -interactive
+package require openlane 0.9
+prep -design picorv32a
+run_synthesis
+run_floorplan
+detailed_placement
+run_cts
+gen_pdn
+run_routing
+```
+## OpenLANE non-interactive flow
+
+```
+cd /home/priyansh/OpenLane 
+make mount
+./flow.tcl -design picorv32a
+```
+
+
+## Acknowledgement
+
+- Kunal Ghosh,VSD Corp.Pvt.Ltd.
+- ChatGPT
+- Shant Rakshit,Colleague,IIIT-B
+- Emil J. Lal , Colleague, IIITB
+
+## Reference
+
+- https://www.vsdiat.com
+- https://github.com/Devipriya1921/Physical_Design_Using_OpenLANE_Sky130
+- https://github.com/nickson-jose/vsdstdcelldesign
+
