@@ -542,7 +542,7 @@ magic -T /home/priyansh/OpenLane/vsdstdcelldesign/libs/sky130A.tech lef read ../
 
 
 ```
-![Screenshot from 2023-09-17 18-20-32](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/30a56f46-4423-4df8-b496-7b211429099e)
+![Screenshot from 2023-09-18 15-44-40](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/8043c2f3-d1eb-429a-b032-1c17fde409d1)
 
 
 ### Clock Tree Synthesis using Tritoncts
