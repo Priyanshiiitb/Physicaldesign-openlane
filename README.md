@@ -491,9 +491,14 @@ add_lefs -src $lefs
 run_synthesis
 
 ```
+Synthesis log-
+
+![Screenshot from 2023-09-18 13-48-49](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/420d29cf-a7dd-4103-b4dd-11bc448b9f53)
+
+
 STA report 
 
-![image](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/7e430f5f-e84b-4c02-b414-57c8442abf65)
+![Screenshot from 2023-09-18 13-50-48](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/6afe8ae1-d07d-42f7-b13b-8dd678eddba9)
 
 ## Delay Tables
 
@@ -513,12 +518,22 @@ When the algorithm works with these delay tables, it utilizes the provided input
 
 ## Openlane steps with custom standard cell
 
+Custom Cell inclusion in OpenLane Flow
 
+We have seen till the synthesis for the custom standard cell in OpenLane flow, and verified the synthesis and STA log files. We will pick it from there now.
+
+First check the slack for the synthesis.
+
+The slack was positive, therefore we can proceed, else would have to work on the slack.
+
+Now we run the floorplan and placement processes.
 We perform synthesis and found that it has positive slack and met timing constraints.
 
 During Floorplan,``` 504 endcaps, 6731 tapcells ``` got placed. Design has 275 original rows
 
 Now ``` run_placement```
+
+![Screenshot from 2023-09-18 13-53-29](https://github.com/Priyanshiiitb/Physicaldesign-openlane/assets/140998626/7d0ddb96-3e9c-48a1-a8fe-42893a40c231)
 
 After placement, we check for legality &To check the layout invoke magic from the results/placement directory:
 
